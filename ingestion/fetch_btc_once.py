@@ -20,43 +20,51 @@ DATA_DIR = Path(os.getenv("DATA_DIR", "./data/raw"))
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 CSV_FILE = DATA_DIR/"btc_raw.csv"
 
+LOG_FILE = Path("logs/btc_ingestion.log")
+
+def log(msg):
+    LOG_FILE.parent.mkdir(exist_ok=True)
+    with LOG_FILE.open("a", encoding="utf-8") as f:
+        f.write(msg + "\n")
+
+
 def main():
-  #1. Fetch BTC Price
-  response = requests.get(API_URL, timeout=10)
-  response.raise_for_status()
-  data = response.json()
+    log("[START] fetch_btc_once running")
 
-  price = float(data["bitcoin"]["usd"])
-  ts = datetime.utcnow().isoformat()
+    response = requests.get(API_URL, timeout=10)
+    response.raise_for_status()
+    data = response.json()
 
-  #2. Save to CSV
-  if not CSV_FILE.exists():
-    CSV_FILE.write_text("timestamp,price_usd\n")
+    price = float(data["bitcoin"]["usd"])
+    ts = datetime.utcnow().isoformat()
 
-  with CSV_FILE.open("a") as f:
-    f.write(f"{ts},{price}\n")
+    if not CSV_FILE.exists():
+        CSV_FILE.write_text("timestamp,price_usd\n")
 
-  #3. Insert into DB
-  conn = psycopg2.connect(
-    host=DB_HOST,
-    port=DB_PORT,
-    dbname=DB_NAME,
-    user=DB_USER,
-    password=DB_PASSWORD
-  )
+    with CSV_FILE.open("a") as f:
+        f.write(f"{ts},{price}\n")
 
-  with conn:
-    with conn.cursor() as cur:
-      cur.execute(
-        """
-        INSERT INTO btc_price (ts, price_usd, raw_json)
-        VALUES (%s, %s, %s)
-        """,
-        (ts, price, Json(data))
-      )
+    conn = psycopg2.connect(
+        host=DB_HOST,
+        port=DB_PORT,
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD
+    )
 
-  conn.close()
-  print(f"BTC Price inserted: {price} USD at {ts}")
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO btc_price (ts, price_usd, raw_json)
+                VALUES (%s, %s, %s)
+                """,
+                (ts, price, Json(data))
+            )
+
+    conn.close()
+
+    log(f"[OK] BTC inserted | price={price} | ts={ts}")
 
 if __name__ == "__main__":
   main()
