@@ -21,7 +21,7 @@ def main():
   )
 
   query = """
-  SELECT signals, vol_5, vol_10
+  SELECT signal, vol_5, vol_10
   FROM btc_analytics
   """
 
