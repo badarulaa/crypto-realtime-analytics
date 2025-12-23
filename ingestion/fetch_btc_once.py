@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 import requests
 import psycopg2
@@ -36,7 +36,7 @@ def main():
     data = response.json()
 
     price = float(data["bitcoin"]["usd"])
-    ts = datetime.utcnow().isoformat()
+    ts = datetime.now(timezone.utc).isoformat()
 
     if not CSV_FILE.exists():
         CSV_FILE.write_text("timestamp,price_usd\n")

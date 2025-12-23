@@ -1,5 +1,5 @@
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 import sys
 from pathlib import Path
 
@@ -12,7 +12,7 @@ from analytics.run_analytics import main as run_analytics
 INTERVAL_SECONDS = 300
 
 def log(msg: str):
-  ts = datetime.utcnow().isoformat()
+  ts = datetime.now(timezone.utc).isoformat()
   print(f"[{ts}] {msg}", flush=True)
 
 if __name__ == "__main__":

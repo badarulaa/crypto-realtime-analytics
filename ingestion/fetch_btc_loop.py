@@ -1,7 +1,7 @@
 import time
 import sys
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Tambahkan root project ke PYTHONPATH
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -14,7 +14,7 @@ INTERVAL_SECONDS = 300  # 5 menit
 
 
 def log(msg):
-    ts = datetime.utcnow().isoformat()
+    ts = datetime.now(timezone.utc).isoformat()
     print(f"[{ts}] {msg}", flush=True)
 
 
