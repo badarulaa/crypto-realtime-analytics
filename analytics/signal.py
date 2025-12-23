@@ -1,6 +1,6 @@
 import pandas as pd
 
-def generate_signal(df: pd.DataFrame) -> pd.DataFrame:
+def generate_signal(row: pd.DataFrame) -> str:
   """
   Generate trading signals based on SMA and Volatility
 
