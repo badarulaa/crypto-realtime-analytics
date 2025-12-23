@@ -13,15 +13,17 @@ DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
-API_URL = "https://api.exchangerate.host/latest?base=XAU&symbols=USD"
+API_URL = "https://api.metals.live/v1/spot/gold"
 
 def main():
     response = requests.get(API_URL, timeout=10)
     response.raise_for_status()
     data = response.json()
 
-    price = float(data["rates"]["USD"])
-    ts = datetime.now(timezone.utc)
+    # metals.live returns a list
+    record = data[0]
+    price = float(record["gold"])
+    ts = datetime.fromtimestamp(record["timestamp"], tz=timezone.utc)
 
     conn = psycopg2.connect(
         host=DB_HOST,
@@ -39,7 +41,7 @@ def main():
                 VALUES (%s, %s, %s)
                 ON CONFLICT (ts) DO NOTHING
                 """,
-                (ts, price, Json(data))
+                (ts, price, Json(record))
             )
 
     conn.close()
