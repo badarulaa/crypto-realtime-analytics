@@ -42,27 +42,35 @@ def main():
 
     with conn:
         with conn.cursor() as cur:
-            for ts, row in df.iterrows():
-                price = float(row["Close"])
-                ts = ts.tz_localize(timezone.utc)
+          for ts, row in df.iterrows():
+              close_price = row["Close"].item()
+              open_price = row["Open"].item()
+              high_price = row["High"].item()
+              low_price = row["Low"].item()
 
-                raw = {
-                    "open": float(row["Open"]),
-                    "high": float(row["High"]),
-                    "low": float(row["Low"]),
-                    "close": price,
-                    "volume": int(row["Volume"]) if not row["Volume"] != row["Volume"] else None
-                }
+              volume = None
+              if not pd.isna(row["Volume"]):
+                  volume = int(row["Volume"].item())
 
-                cur.execute(
-                    """
-                    INSERT INTO xau_price (ts, price_usd, raw_json)
-                    VALUES (%s, %s, %s)
-                    ON CONFLICT (ts) DO NOTHING
-                    """,
-                    (ts, price, Json(raw))
-                )
-                inserted += 1
+              ts = ts.tz_localize(timezone.utc)
+
+              raw = {
+                  "open": open_price,
+                  "high": high_price,
+                  "low": low_price,
+                  "close": close_price,
+                  "volume": volume
+              }
+
+              cur.execute(
+                  """
+                  INSERT INTO xau_price (ts, price_usd, raw_json)
+                  VALUES (%s, %s, %s)
+                  ON CONFLICT (ts) DO NOTHING
+                  """,
+                  (ts, close_price, Json(raw))
+              )
+
 
     conn.close()
     print(f"Inserted {inserted} rows into xau_price")
