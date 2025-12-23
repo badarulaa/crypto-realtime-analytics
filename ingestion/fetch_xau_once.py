@@ -22,11 +22,20 @@ def main():
 
     csv_text = response.text
     reader = csv.DictReader(StringIO(csv_text))
-    row = next(reader)
+    rows = list(reader)
+
+    # 🔒 SAFETY CHECK
+    if not rows:
+        print("[XAUUSD] No data returned from Stooq (market closed or no update)")
+        return
+
+    row = rows[0]
 
     price = float(row["Close"])
     date_str = f"{row['Date']} {row['Time']}"
-    ts = datetime.strptime(date_str, "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+    ts = datetime.strptime(
+        date_str, "%Y-%m-%d %H:%M"
+    ).replace(tzinfo=timezone.utc)
 
     conn = psycopg2.connect(
         host=DB_HOST,
