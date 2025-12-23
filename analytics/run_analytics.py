@@ -11,6 +11,7 @@ sys.path.append(str(ROOT_DIR))
 
 from analytics.moving_average import simple_moving_average
 from analytics.volatility import volatility
+from analytics.signal import generate_signal
 
 load_dotenv()
 
@@ -46,8 +47,11 @@ def main():
   df["sma_10"] = simple_moving_average(df["price_usd"], window=10)
   df["vol_5"] = volatility(df["price_usd"], window=5)
   df["vol_10"] = volatility(df["price_usd"], window=10)
+  df["signal"] = df.apply(generate_signal, axis=1)
 
-  print(df.tail(10))
+  print(df.tail(10)[
+    ["ts", "price_usd", "sma_5", "sma_10", "vol_5", "vol_10", "signal"]
+  ])
 
 if __name__ == "__main__":
   main()
