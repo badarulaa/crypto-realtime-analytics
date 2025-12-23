@@ -2,7 +2,8 @@ import os
 from datetime import datetime, timezone
 import requests
 import psycopg2
-from psycopg2.extras import Json
+import csv
+from io import StringIO
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,17 +14,19 @@ DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
-API_URL = "https://api.metals.live/v1/spot/gold"
+API_URL = "https://stooq.com/q/l/?s=xauusd&i=5"
 
 def main():
     response = requests.get(API_URL, timeout=10)
     response.raise_for_status()
-    data = response.json()
 
-    # metals.live returns a list
-    record = data[0]
-    price = float(record["gold"])
-    ts = datetime.fromtimestamp(record["timestamp"], tz=timezone.utc)
+    csv_text = response.text
+    reader = csv.DictReader(StringIO(csv_text))
+    row = next(reader)
+
+    price = float(row["Close"])
+    date_str = f"{row['Date']} {row['Time']}"
+    ts = datetime.strptime(date_str, "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
 
     conn = psycopg2.connect(
         host=DB_HOST,
@@ -41,7 +44,7 @@ def main():
                 VALUES (%s, %s, %s)
                 ON CONFLICT (ts) DO NOTHING
                 """,
-                (ts, price, Json(record))
+                (ts, price, row)
             )
 
     conn.close()
