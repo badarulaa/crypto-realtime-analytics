@@ -31,7 +31,7 @@ def main():
   df = pd.read_sql(query, conn, parse_dates=["ts"])
   conn.close()
 
-  if df.empty():
+  if df.empty:
     print("No analytics data found.")
     return
 
