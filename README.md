@@ -30,6 +30,33 @@ and stores both raw and analytics data into a database.
 4. Results stored in `btc_analytics`
 5. Visualization reads from analytics table
 
+## Architecture Overview
+[ Public API ]
+      |
+      v
+[ Ingestion Loop ]
+      |
+      v
+[ btc_price (PostgreSQL) ]
+      |
+      v
+[ Analytics Engine ]
+      |
+      v
+[ btc_analytics (PostgreSQL) ]
+      |
+      v
+[ Visualization ]
+
+## What I Learned
+- Designing an end-to-end data pipeline (ingestion → analytics → storage)
+- Working with PostgreSQL for analytical workloads
+- Implementing technical indicators (SMA, volatility) using pandas
+- Building rule-based trading signals
+- Automating long-running analytics with Python loops
+- Improving data visualization readability
+- Structuring a project with separation of concerns
+
 ## Acknowledgements
 This project was developed with guidance and mentorship from **ChatGPT (OpenAI)**,
 acting as a technical mentor throughout the design and implementation of the
