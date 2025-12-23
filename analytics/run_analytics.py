@@ -22,36 +22,37 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 def save_analytics_to_db(df: pd.DataFrame):
-  conn = psycopg2.connect(
-    host=DB_HOST,
-    port=DB_PORT,
-    dbname=DB_NAME,
-    user=DB_USER,
-    password=DB_PASSWORD
-  )
+    conn = psycopg2.connect(
+        host=DB_HOST,
+        port=DB_PORT,
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD
+    )
 
-  insert_sql = """
-  INSERT INTO btc_analytics (
-    ts, price_usd, sma_5, sma_10, vol_5, vol_10, signal
-  ) VALUES (%s, %s, %s, %s, %s, %s, %s)
-  ON CONFLICT (ts) DO NOTHING;
-  """
+    insert_sql = """
+    INSERT INTO btc_analytics (
+        ts, price_usd, sma_5, sma_10, vol_5, vol_10, signal
+    )
+    VALUES (%s, %s, %s, %s, %s, %s, %s)
+    ON CONFLICT (ts) DO NOTHING;
+    """
 
-  with conn:
-    with conn.cursor() as cur:
-      for _, row in df.iterrows():
-        cur.execute(
-          insert_sql,
-          (
-            row["ts"],
-            row["price_usd"],
-            row["sma_5"],
-            row["sma_10"],
-            row["vol_5"],
-            row["vol_10"],
-            row["signal"]
-          )
-        )
+    with conn:
+        with conn.cursor() as cur:
+            for _, row in df.iterrows():
+                cur.execute(
+                    insert_sql,
+                    (
+                        row["ts"],
+                        row["price_usd"],
+                        row["sma_5"],
+                        row["sma_10"],
+                        row["vol_5"],
+                        row["vol_10"],
+                        row["signal"],
+                    )
+                )
 
     conn.close()
 
