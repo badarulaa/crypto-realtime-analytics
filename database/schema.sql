@@ -17,3 +17,15 @@ CREATE TABLE IF NOT EXISTS btc_price (
 );
 
 CREATE INDEX idx_btc_price_ts ON btc_price (ts);
+
+CREATE TABLE IF NOT EXISTS btc_analytics (
+    ts TIMESTAMPTZ PRIMARY KEY,
+    price_usd NUMERIC,
+    sma_5 NUMERIC,
+    sma_10 NUMERIC,
+    vol_5 NUMERIC,
+    vol_10 NUMERIC,
+    signal TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
