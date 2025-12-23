@@ -2,6 +2,7 @@ import os
 import psycopg2
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -31,15 +32,17 @@ def main():
   df = pd.read_sql(query, conn, parse_dates=["ts"])
   conn.close()
 
+  df = df.tail(100)
+
   if df.empty:
     print("No analytics data found.")
     return
 
   # Plot
   plt.figure(figsize=(14, 7))
-  plt.plot(df["ts"], df["price_usd"], label="BTC Price")
-  plt.plot(df["ts"], df["sma_5"], label="SMA 5")
-  plt.plot(df["ts"], df["sma_10"], label="SMA 10")
+  plt.plot(df["ts"], df["price_usd"], label="BTC Price", linewidth=2)
+  plt.plot(df["ts"], df["sma_5"], label="SMA 5", linestyle="--")
+  plt.plot(df["ts"], df["sma_10"], label="SMA 10", linestyle=":")
 
   # Plot Buy/Sell signals
   buy_signals = df[df["signal"] == "BUY"]
@@ -49,7 +52,7 @@ def main():
     buy_signals["ts"],
     buy_signals["price_usd"],
     marker="^",
-    s=100,
+    s=120,
     label="BUY"
   )
 
@@ -57,7 +60,7 @@ def main():
     sell_signals["ts"],
     sell_signals["price_usd"],
     marker="v",
-    s=100,
+    s=120,
     label="SELL"
   )
 
@@ -66,6 +69,10 @@ def main():
   plt.ylabel("Price (USD)")
   plt.legend()
   plt.grid(True)
+  plt.gca().xaxis.set_major_formatter(
+    mdates.DateFormatter("%H:%M")
+  )
+  plt.gcf().autofmt_xdate()
 
   plt.show()
 
