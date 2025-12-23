@@ -33,7 +33,7 @@ def main():
     return
 
   print("\n=== Signal Distribution ===")
-  signal_counts = df["signals"].value_counts()
+  signal_counts = df["signal"].value_counts()
   print(signal_counts)
 
   print("\n=== Signal Percentage (%) ====")
