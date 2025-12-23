@@ -14,7 +14,7 @@ DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
-API_URL = "https://stooq.com/q/l/?s=xauusd&i=5"
+API_URL = "https://stooq.com/q/l/?s=xauusd&i=15"
 
 def main():
     response = requests.get(API_URL, timeout=10)
