@@ -1,9 +1,8 @@
 import os
-from datetime import datetime, timezone
-import requests
+from datetime import timezone
+import yfinance as yf
 import psycopg2
-import csv
-from io import StringIO
+from psycopg2.extras import Json
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -14,28 +13,22 @@ DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
-API_URL = "https://stooq.com/q/l/?s=xauusd&i=15"
+SYMBOL = "GC=F"  # Gold Futures
+
 
 def main():
-    response = requests.get(API_URL, timeout=10)
-    response.raise_for_status()
+    print("Fetching XAUUSD historical data from Yahoo Finance...")
 
-    csv_text = response.text
-    reader = csv.DictReader(StringIO(csv_text))
-    rows = list(reader)
+    df = yf.download(
+        SYMBOL,
+        period="2y",     # 2 years data
+        interval="1d",   # daily
+        progress=False
+    )
 
-    # 🔒 SAFETY CHECK
-    if not rows:
-        print("[XAUUSD] No data returned from Stooq (market closed or no update)")
+    if df.empty:
+        print("No data returned from Yahoo Finance")
         return
-
-    row = rows[0]
-
-    price = float(row["Close"])
-    date_str = f"{row['Date']} {row['Time']}"
-    ts = datetime.strptime(
-        date_str, "%Y-%m-%d %H:%M"
-    ).replace(tzinfo=timezone.utc)
 
     conn = psycopg2.connect(
         host=DB_HOST,
@@ -45,19 +38,35 @@ def main():
         password=DB_PASSWORD
     )
 
+    inserted = 0
+
     with conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """
-                INSERT INTO xau_price (ts, price_usd, raw_json)
-                VALUES (%s, %s, %s)
-                ON CONFLICT (ts) DO NOTHING
-                """,
-                (ts, price, row)
-            )
+            for ts, row in df.iterrows():
+                price = float(row["Close"])
+                ts = ts.tz_localize(timezone.utc)
+
+                raw = {
+                    "open": float(row["Open"]),
+                    "high": float(row["High"]),
+                    "low": float(row["Low"]),
+                    "close": price,
+                    "volume": int(row["Volume"]) if not row["Volume"] != row["Volume"] else None
+                }
+
+                cur.execute(
+                    """
+                    INSERT INTO xau_price (ts, price_usd, raw_json)
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (ts) DO NOTHING
+                    """,
+                    (ts, price, Json(raw))
+                )
+                inserted += 1
 
     conn.close()
-    print(f"[XAUUSD] inserted {price} at {ts}")
+    print(f"Inserted {inserted} rows into xau_price")
+
 
 if __name__ == "__main__":
     main()
