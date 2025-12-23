@@ -20,7 +20,7 @@ def main():
   response.raise_for_status()
   data = response.json()
 
-  price = float(data["rates"["USD"]])
+  price = float(data["rates"]["USD"])
   ts = datetime.now(timezone.utc).isoformat()
 
   conn = psycopg2.connect(
@@ -37,6 +37,7 @@ def main():
         """
         INSERT INTO xau_price (ts, price_usd, raw_json)
         VALUES (%s, %s, %s)
+        ON CONFLICT (ts) DO NOTHING;
         """,
         (ts, price, Json(data))
       )
