@@ -16,34 +16,34 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 API_URL = "https://api.exchangerate.host/latest?base=XAU&symbols=USD"
 
 def main():
-  response = requests.get(API_URL, timeout=10)
-  response.raise_for_status()
-  data = response.json()
+    response = requests.get(API_URL, timeout=10)
+    response.raise_for_status()
+    data = response.json()
 
-  price = float(data["rates"]["USD"])
-  ts = datetime.now(timezone.utc).isoformat()
+    price = float(data["rates"]["USD"])
+    ts = datetime.now(timezone.utc)
 
-  conn = psycopg2.connect(
-    host=DB_HOST,
-    port=DB_PORT,
-    dbname=DB_NAME,
-    user=DB_USER,
-    password=DB_PASSWORD
-  )
+    conn = psycopg2.connect(
+        host=DB_HOST,
+        port=DB_PORT,
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD
+    )
 
-  with conn:
-    with conn.cursor() as cur:
-      cur.execute(
-        """
-        INSERT INTO xau_price (ts, price_usd, raw_json)
-        VALUES (%s, %s, %s)
-        ON CONFLICT (ts) DO NOTHING;
-        """,
-        (ts, price, Json(data))
-      )
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO xau_price (ts, price_usd, raw_json)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (ts) DO NOTHING
+                """,
+                (ts, price, Json(data))
+            )
 
-  conn.close()
-  print(f"[XAUUSD] inserted {price} at {ts}")
+    conn.close()
+    print(f"[XAUUSD] inserted {price} at {ts}")
 
 if __name__ == "__main__":
-  main()
+    main()
