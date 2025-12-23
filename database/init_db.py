@@ -44,6 +44,15 @@ def init_tables():
             );
             """)
 
+            # xau price table
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS xau_price (
+                ts TIMESTAMPTZ PRIMARY KEY,
+                price_usd NUMERIC,
+                raw_json JSONB
+            );
+            """)
+
     conn.close()
     print("Database tables are ready.")
 
