@@ -84,11 +84,17 @@ def main():
   df["vol_10"] = volatility(df["price_usd"], window=10)
   df["signal"] = df.apply(generate_signal, axis=1)
 
-  print(df.tail(10)[
-    ["ts", "price_usd", "sma_5", "sma_10", "vol_5", "vol_10", "signal"]
-  ])
   save_analytics_to_db(df)
   print("Analytics saved to database.")
+
+  latest = df.iloc[-1]
+
+  print(
+      f"Latest | ts={latest['ts']} | "
+      f"price={latest['price_usd']} | "
+      f"signal={latest['signal']}"
+)
+
 
 if __name__ == "__main__":
   main()
