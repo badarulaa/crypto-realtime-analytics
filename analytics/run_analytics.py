@@ -10,6 +10,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(ROOT_DIR))
 
 from analytics.moving_average import simple_moving_average
+from analytics.volatility import volatility
 
 load_dotenv()
 
@@ -43,6 +44,8 @@ def main():
 
   df["sma_5"] = simple_moving_average(df["price_usd"], window=5)
   df["sma_10"] = simple_moving_average(df["price_usd"], window=10)
+  df["vol_5"] = volatility(df["price_usd"], window=5)
+  df["vol_10"] = volatility(df["price_usd"], window=10)
 
   print(df.tail(10))
 
