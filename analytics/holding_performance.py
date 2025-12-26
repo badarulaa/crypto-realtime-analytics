@@ -21,7 +21,7 @@ def main():
   )
 
   query = """
-  SELECT ts, price_usd
+  SELECT ts, price_usd, signal
   FROM btc_analytics
   ORDER BY ts ASC;
   """
