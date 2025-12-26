@@ -38,11 +38,11 @@ def main():
   for horizon in [1, 2, 3, 4, 5]:
     df[f"future_price_{horizon}"] = df["price_usd"].shift(-horizon)
 
-    cond_sell = (df["signal"] == "BUY") & (
+    cond_buy= (df["signal"] == "BUY") & (
       df[f"future_price{horizon}"] > df["price_usd"]
     )
 
-    cond_buy = (df["signal"] == "SELL") & (
+    cond_sell = (df["signal"] == "SELL") & (
       df[f"future_price{horizon}"] < df["price_usd"]
     )
 
